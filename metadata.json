@@ -1,0 +1,8 @@
+{
+  "name": "VibeShift",
+  "description": "Transform Paper into Intelligent Digital Workflows instantaneously using VibeShift AI.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}
