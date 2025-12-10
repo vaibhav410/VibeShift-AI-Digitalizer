@@ -2,7 +2,7 @@
 <div align="center">
 <img width="1428" height="749" alt="Screenshot 2025-12-11 005439" src="https://github.com/user-attachments/assets/0712668e-f8f9-4fe5-b5c8-4f75ed0d4bfd" />
 
-" />
+
 </div>
 
 # Run and deploy your AI Studio app
