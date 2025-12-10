@@ -21,8 +21,8 @@ This section outlines the quick steps to set up and run the project locally on y
 
 #### Prerequisites
 
-* **Node.js:** (Version 18.x or newer recommended)
-* **npm:** (Node Package Manager)
+ **Node.js:** (Version 18.x or newer recommended)
+ **npm:** (Node Package Manager)
 
 #### Quick Start Guide
 
