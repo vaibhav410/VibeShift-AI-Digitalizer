@@ -39,3 +39,5 @@ This section outlines the quick steps to set up and run the project locally on y
     ```bash
     npm run dev
     ```dev`
+
+4. demo vedio : https://drive.google.com/file/d/1AY3IumSWRZ-nhfjkljRESXUG08RTCYux/view?usp=sharing
