@@ -17,7 +17,7 @@ The system automatically detects the 'E-commerce/Ordering' intent and deploys a 
 
 No Coding Required: The app is automatically structured with selectable items and a live shopping cart for easy online ordering.
 
-<div align="center"> <img width="600" alt="Generated Ordering App" src="[Image link of the generated ordering app]"> </div>
+<div align="center"> <img width="600" alt="Generated Ordering App"  src="https://github.com/user-attachments/assets/ef150320-f3b9-47ca-8a7d-aa17365aea01"> </div>
 
 🔥 Try it Live! Upload your document, and get a production-ready application in minutes
 
