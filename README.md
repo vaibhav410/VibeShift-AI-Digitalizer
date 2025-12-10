@@ -10,8 +10,7 @@ VibeShift's Autonomous Decision Engine instantly analyzes the document's intent 
 Step 1: Input Document (The Menu)
 Upload a simple image of a menu or product catalog.
 
-<div align="center"> <img width="400" alt="Sample Restaurant Menu" src="[![images (1)](https://github.com/user-attachments/assets/42395f64-9901-4a66-8ef1-dd074f50b36e)
-]"> </div>
+<div align="center"> <img width="400" alt="Sample Restaurant Menu" src="https://github.com/user-attachments/assets/42395f64-9901-4a66-8ef1-dd074f50b36e"> </div>
 
 Step 2: The VibeShift Result (Live App)
 The system automatically detects the 'E-commerce/Ordering' intent and deploys a full-fledged ordering portal where users can place orders online immediately.
