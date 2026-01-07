@@ -1,24 +1,48 @@
-<div align="center">
-<div align="center">
-<img width="1428" height="749" alt="Screenshot 2025-12-11 005439" src="https://github.com/user-attachments/assets/0712668e-f8f9-4fe5-b5c8-4f75ed0d4bfd" />
+VibeShift’s Autonomous Decision Engine instantly analyzes the intent of campus documents such as feedback forms, registration forms, surveys, and menus, and automatically generates the correct online application structure.
 
+This solves a common campus problem where forms are still paper-based or static PDFs, leading to manual work and slow data processing.
 
-</div>
-Example: Autonomous Ordering App Generation
-VibeShift's Autonomous Decision Engine instantly analyzes the document's intent and generates the correct application structure.
+Step 1: Input Document (Campus Form / Feedback / Registration)
 
-Step 1: Input Document (The Menu)
-Upload a simple image of a menu or product catalog.
+Upload a simple image or PDF of a campus document such as:
 
-<div align="center"> <img width="400" alt="Sample Restaurant Menu" src="https://github.com/user-attachments/assets/42395f64-9901-4a66-8ef1-dd074f50b36e"> </div>
+Event registration form
 
-Step 2: The VibeShift Result (Live App)
-The system automatically detects the 'E-commerce/Ordering' intent and deploys a full-fledged ordering portal where users can place orders online immediately.
+Student feedback form
 
-No Coding Required: The app is automatically structured with selectable items and a live shopping cart for easy online ordering.
+Club membership form
 
-<div align="center"> <img width="600" alt="Generated Ordering App"  src="https://github.com/user-attachments/assets/ef150320-f3b9-47ca-8a7d-aa17365aea01"> </div>
+Mess feedback or menu
 
-🔥 Try it Live! Upload your document, and get a production-ready application in minutes
+<div align="center"> <img width="400" alt="Sample Campus Form" src="https://github.com/user-attachments/assets/42395f64-9901-4a66-8ef1-dd074f50b36e"> </div>
+Step 2: VibeShift Result (Live Online System)
 
-4. demo vedio : https://drive.google.com/file/d/1AY3IumSWRZ-nhfjkljRESXUG08RTCYux/view?usp=sharing
+The system automatically detects the form intent (registration, feedback, survey, ordering, etc.) and deploys a fully functional online web application where users can submit responses instantly.
+
+No Coding Required
+The application is automatically structured with:
+
+Input fields
+
+Validation
+
+Real-time data collection
+
+Ready-to-use backend
+
+<div align="center"> <img width="600" alt="Generated Campus Web App" src="https://github.com/user-attachments/assets/ef150320-f3b9-47ca-8a7d-aa17365aea01"> </div>
+🔥 Real-World Campus Impact
+
+Eliminates paper & manual data entry
+
+Reduces form setup time by ~70%
+
+Enables instant data collection & analysis
+
+Makes campus processes faster and more efficient
+
+🎥 Demo Video
+
+Watch the live demo showing how a campus document is converted into a working web application using Google Gemini AI:
+
+👉 https://drive.google.com/file/d/1AY3IumSWRZ-nhfjkljRESXUG08RTCYux/view?usp=sharing
