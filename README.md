@@ -1,33 +1,29 @@
-VibeShift is an AI-powered autonomous decision engine that instantly converts simple documents or images (like restaurant menus or product catalogs) into fully functional ordering applications — without writing a single line of code.
+<div align="center">
+<div align="center">
+<img width="1428" height="749" alt="Screenshot 2025-12-11 005439" src="https://github.com/user-attachments/assets/0712668e-f8f9-4fe5-b5c8-4f75ed0d4bfd" />
 
-🧠 Example: Autonomous Ordering App Generation
 
-VibeShift’s Autonomous Decision Engine analyzes the uploaded document and automatically generates the correct application structure.
+</div>
+Example: Autonomous Ordering App Generation
+VibeShift's Autonomous Decision Engine instantly analyzes the document's intent and generates the correct application structure.
 
-📥 Step 1: Input Document (The Menu)
-
+Step 1: Input Document (The Menu)
 Upload a simple image of a menu or product catalog.
 
-Example Input (Restaurant Menu Image):
+<div align="center"> <img width="400" alt="Sample Restaurant Menu" src="<img width="1108" height="822" alt="image" src="https://github.com/user-attachments/assets/9655d409-a704-488d-9afd-cb404bab3f33" /> </div>
 
-<div align="center"> <img width="900" alt="Sample Restaurant Menu" src="https://github.com/user-attachments/assets/0712668e-f8f9-4fe5-b5c8-4f75ed0d4bfd" /> </div>
-⚙️ Step 2: VibeShift Result (Live Ordering App)
+Step 2: The VibeShift Result (Live App)
+The system automatically detects the 'E-commerce/Ordering' intent and deploys a full-fledged ordering portal where users can place orders online immediately.
 
-The system automatically detects the E-commerce / Ordering intent and deploys a full-fledged ordering portal where users can place orders instantly.
+No Coding Required: The app is automatically structured with selectable items and a live shopping cart for easy online ordering.
 
-✨ What gets generated automatically:
+<div align="center"> <img width="600" alt="Generated Ordering App"  src="https://github.com/user-attachments/assets/ef150320-f3b9-47ca-8a7d-aa17365aea01"> </div>
 
-Selectable food items
+🔥 Try it Live! Upload your document, and get a production-ready application in minutes
 
-Quantity options (Quarter / Half / Full)
+4. demo vedio : https://drive.google.com/file/d/1AY3IumSWRZ-nhfjkljRESXUG08RTCYux/view?usp=sharing
+In many colleges and local communitie
 
-Live shopping cart
 
-Clean & mobile-friendly UI
 
-Generated Ordering App Preview:
-
-<div align="center"> <img width="650" alt="Generated Ordering App" src="https://github.com/user-attachments/assets/ef150320-f3b9-47ca-8a7d-aa17365aea01" /> </div>
-🚫 No Coding Required
-
-Everything is structured automatically — from menu parsing to cart generation — making it ideal for colleges, local communities, and small businesses.
+isme ye image dalni hain daal de meneu ki jaghe aur e=redame de achhe se
