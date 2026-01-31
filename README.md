@@ -28,7 +28,7 @@ No Coding Required: The app is automatically structured with selectable items an
 
 🔥 Try it Live! Upload your document, and get a production-ready application in minutes
 
-4. demo vedio : https://drive.google.com/file/d/1AY3IumSWRZ-nhfjkljRESXUG08RTCYux/view?usp=sharing
+4. demo vedio : https://drive.google.com/file/d/1QY5M4Jd74g5-qCXYrwLdcC3yz9gWnXNj/view?usp=sharing
 In many colleges and local communitie
 
 
