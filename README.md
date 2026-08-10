@@ -1,123 +1,89 @@
 <div align="center">
 
-<img width="1428" alt="VibeShift — Industrial AI Architect" src="https://github.com/user-attachments/assets/0712668e-f8f9-4fe5-b5c8-4f75ed0d4bfd" />
-
 # ⚡ VibeShift — AI Digitalizer
 
-### Turn any document into a production-ready web app. No code. No setup. Just upload.
+**Turn any paper document into a live web app — in seconds. No code needed.**
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-vibeshift--ai--digitalizer.vercel.app-6C47FF?style=for-the-badge)](https://vibeshift-ai-digitalizer.vercel.app)
-[![Demo Video](https://img.shields.io/badge/🎬_Demo_Video-Watch_Now-FF0000?style=for-the-badge)](https://drive.google.com/file/d/1QY5M4Jd74g5-qCXYrwLdcC3yz9gWnXNj/view?usp=sharing)
+[![Live Website](https://img.shields.io/badge/🌐_Visit_Live_Website-vibeshift--ai--digitalizer.vercel.app-6C47FF?style=for-the-badge)](https://vibeshift-ai-digitalizer.vercel.app)
+[![Demo Video](https://img.shields.io/badge/🎬_Watch_Demo-Video-FF0000?style=for-the-badge)](https://drive.google.com/file/d/1QY5M4Jd74g5-qCXYrwLdcC3yz9gWnXNj/view?usp=sharing)
 
-![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
-![Gemini AI](https://img.shields.io/badge/Google_Gemini-8E75B2?style=flat-square&logo=googlegemini&logoColor=white)
-![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black)
-![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
+<br/>
+
+<a href="https://vibeshift-ai-digitalizer.vercel.app">
+  <img src="assets/live-site.png" alt="VibeShift live website — Unleash the Power of AI Agents" width="900"/>
+</a>
+
+*The live VibeShift website — click the image to open it.*
 
 </div>
 
 ---
 
-## 🚀 What is VibeShift?
+## 💡 What is VibeShift?
 
-**VibeShift** is an autonomous AI architect that converts real-world documents — menus, forms, catalogs, registers — into **live, working web applications in minutes**.
+VibeShift is an AI system that takes a **photo of any paper document** — a restaurant menu, an admission form, an invoice, a product catalog — and instantly turns it into a **working web application**.
 
-Upload a photo of a restaurant menu → get a full online ordering portal.
-Upload a paper admission form → get a digital form with validation and a database.
-Upload a product catalog → get an e-commerce storefront with a shopping cart.
+You don't write any code. You don't design anything. You just upload a picture.
 
-The **Autonomous Decision Engine** detects the document's *intent* and builds the right kind of app automatically — structure, UI, and data layer included.
+**How it decides what to build:**
 
-## ✨ Key Features
-
-| Feature | Description |
+| You upload... | VibeShift builds... |
 |---|---|
-| 🧠 **Autonomous Decision Engine** | Gemini AI analyzes the document and decides what app to build — no prompts needed |
-| 📸 **Document → App** | Upload an image, PDF, or scan; get a deployed application |
-| 🛒 **Smart Intent Detection** | Menus become ordering portals, forms become digital forms, catalogs become stores |
-| 📊 **Analytics Dashboard** | Live charts and insights for your generated apps |
-| 🤖 **Built-in AI Chatbot** | Conversational assistant integrated into every generated app |
-| 🔄 **Workflow Agent** | Automates multi-step processes end to end |
-| 🎨 **3D Interactive UI** | Modern landing experience with 3D cards and stage effects |
-| 🔐 **Auth & Firestore** | Optional Firebase authentication and real-time data storage |
+| 🍽️ A restaurant menu | An online ordering portal with a shopping cart |
+| 📋 A paper form | A digital form with validation + database |
+| 🛍️ A product catalog | An e-commerce storefront |
+| 🧾 An invoice / register | A structured data-entry app |
 
-## 🎯 See It In Action
+The AI reads the document, understands its *purpose*, and generates the right app automatically.
 
-### Step 1 — Upload a document (a restaurant menu)
+## 📸 Example: Menu → Ordering App
+
+**Step 1 — Upload a photo of a menu:**
 
 <div align="center">
-  <img width="400" alt="Sample Restaurant Menu" src="https://github.com/user-attachments/assets/3d66c02d-d1f0-4d60-a745-50b81dbc9b96" />
+  <img width="400" alt="Sample restaurant menu" src="https://github.com/user-attachments/assets/3d66c02d-d1f0-4d60-a745-50b81dbc9b96" />
 </div>
 
-### Step 2 — VibeShift builds the app automatically
-
-The engine detects the **E-commerce / Ordering** intent and deploys a full ordering portal — selectable items, live shopping cart, instant online ordering. Zero code written.
+**Step 2 — VibeShift detects "ordering" intent and builds this automatically:**
 
 <div align="center">
-  <img width="600" alt="Generated Ordering App" src="https://github.com/user-attachments/assets/ef150320-f3b9-47ca-8a7d-aa17365aea01" />
+  <img width="650" alt="Generated ordering app with live cart" src="https://github.com/user-attachments/assets/ef150320-f3b9-47ca-8a7d-aa17365aea01" />
 </div>
 
-<div align="center">
+A complete ordering portal — selectable items, live shopping cart, ready for customers. **Zero code written.**
 
-**🔥 [Try it live →](https://vibeshift-ai-digitalizer.vercel.app)** &nbsp;•&nbsp; **🎬 [Watch the demo video →](https://drive.google.com/file/d/1QY5M4Jd74g5-qCXYrwLdcC3yz9gWnXNj/view?usp=sharing)**
+## ✨ Features
 
-</div>
+- 🧠 **Autonomous Decision Engine** — Gemini AI understands the document and picks the right app type by itself
+- 📊 **Analytics Dashboard** — live charts for your generated apps
+- 🤖 **Built-in Chatbot** — AI assistant inside the app
+- 🔄 **Workflow Agent** — automates multi-step processes
+- 🎨 **Modern 3D UI** — animated landing page with interactive cards
+- 🔐 **Firebase-ready** — optional auth and real-time database
 
-## 🛠️ Tech Stack
+## 🛠️ Built With
 
-- **Frontend:** React 19 + TypeScript + Vite 6
-- **Styling:** Tailwind CSS 4, Motion (animations), Lucide icons
-- **AI:** Google Gemini (`@google/genai`)
-- **Charts:** Recharts
-- **Backend:** Firebase / Firestore (optional)
-- **Hosting:** Vercel
+`React 19` · `TypeScript` · `Vite 6` · `Tailwind CSS 4` · `Google Gemini AI` · `Firebase` · `Recharts` · `Vercel`
 
-## ⚙️ Run Locally
+## 🚀 Run It Yourself
 
 ```bash
-# 1. Clone the repo
 git clone https://github.com/vaibhav410/VibeShift-AI-Digitalizer.git
 cd VibeShift-AI-Digitalizer
-
-# 2. Install dependencies
 npm install
-
-# 3. Add your Gemini API key
-cp .env.example .env.local
-# then edit .env.local and set GEMINI_API_KEY=your_key_here
-
-# 4. Start the dev server
+cp .env.example .env.local   # add your GEMINI_API_KEY inside
 npm run dev
 ```
 
-Open **http://localhost:3000** — you're live. 🎉
+Open **http://localhost:3000** — done. 🎉
 
-> Get a free Gemini API key at [Google AI Studio](https://aistudio.google.com/apikey).
+> Free Gemini API key: [Google AI Studio](https://aistudio.google.com/apikey)
 
-## 📁 Project Structure
+## 🌍 Why I Built This
 
-```
-├── App.tsx                 # Main application shell & routing
-├── components/
-│   ├── LandingPage.tsx     # 3D animated landing experience
-│   ├── UploadDashboard.tsx # Document upload & processing
-│   ├── AnalysisReview.tsx  # AI analysis review step
-│   ├── FormPreview.tsx     # Generated app preview
-│   ├── AnalyticsDashboard.tsx
-│   ├── Chatbot.tsx         # Integrated AI assistant
-│   ├── WorkflowAgent.tsx   # Multi-step automation agent
-│   └── ...
-├── services/gemini.ts      # Gemini AI service layer
-├── firebase.ts             # Firestore integration
-└── firestore.rules         # Database security rules
-```
+In many colleges and local communities, everyday processes still run on paper — admission forms, canteen menus, event registrations. VibeShift removes the technical barrier completely:
 
-## 🌍 Why It Matters
-
-In many colleges and local communities, essential processes still run on paper — admission forms, canteen menus, event registrations. VibeShift removes the technical barrier entirely: **if you can take a photo, you can launch an app.**
+> **If you can take a photo, you can launch an app.**
 
 ---
 
@@ -125,6 +91,6 @@ In many colleges and local communities, essential processes still run on paper �
 
 Built with ❤️ by **[Vaibhav Kumar Kanojia](https://github.com/vaibhav410)**
 
-⭐ Star this repo if you find it useful!
+⭐ **Star this repo** if you like it!
 
 </div>
