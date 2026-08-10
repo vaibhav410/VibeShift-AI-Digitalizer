@@ -36,21 +36,24 @@ You don't write any code. You don't design anything. You just upload a picture.
 
 The AI reads the document, understands its *purpose*, and generates the right app automatically.
 
-## 📸 Example: Menu → Ordering App
+## 🔄 The Real Workflow
 
-**Step 1 — Upload a photo of a menu:**
-
-<div align="center">
-  <img width="400" alt="Sample restaurant menu" src="https://github.com/user-attachments/assets/3d66c02d-d1f0-4d60-a745-50b81dbc9b96" />
-</div>
-
-**Step 2 — VibeShift detects "ordering" intent and builds this automatically:**
+Here's how VibeShift works in practice — straight from the live product:
 
 <div align="center">
-  <img width="650" alt="Generated ordering app with live cart" src="https://github.com/user-attachments/assets/ef150320-f3b9-47ca-8a7d-aa17365aea01" />
+  <a href="https://vibeshift-ai-digitalizer.vercel.app">
+    <img src="assets/workflow.png" alt="VibeShift workflow — AI form scanning, real-time previews, one-click integrations, custom parameters, parallel OCR engines, easy deployment" width="900"/>
+  </a>
 </div>
 
-A complete ordering portal — selectable items, live shopping cart, ready for customers. **Zero code written.**
+**The pipeline, step by step:**
+
+1. **📸 AI-powered form scanning** — upload a document; the OCR engine reads it with real-time confidence scoring
+2. **👀 Real-time document preview** — extracted fields render instantly as a responsive layout
+3. **⚙️ Flexible custom parameters** — tune business rules and alert systems without touching code
+4. **⚡ Parallel OCR engines** — high-volume documents are processed by multiple AI units at once
+5. **🔌 One-click integrations** — connect the extracted workflow to your favorite dev tools
+6. **🚀 Instant deployment** — from a scanned paper form to a live, secure application in seconds
 
 ## ✨ Features
 
