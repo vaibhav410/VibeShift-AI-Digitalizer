@@ -1,46 +1,79 @@
 
 export interface GenericItem {
   id: string;
-  name: string; // Field Label (e.g., "First Name" or "Pizza Margherita")
-  value: string | number; // Default value, Price, or Content
-  category: string; // Section Header
-  description?: string; // Placeholder or Tooltip
-  type?: 'text' | 'number' | 'date' | 'textarea' | 'currency' | 'boolean'; // UI Hint
+  name: string;
+  label?: string;
+  value: string | number;
+  category: string;
+  description?: string;
+  type?: 'text' | 'number' | 'date' | 'textarea' | 'currency' | 'boolean';
+  sku?: string;
+  stockCount?: number;
+  taxRate?: string;
+  margin?: string;
+  department?: string;
+  severity?: 'Critical' | 'High' | 'Medium' | 'Low';
+  remediationText?: string;
+  validationRule?: string;
 }
 
 export type LayoutType = 'form' | 'catalog' | 'checklist';
+export type Language = 'en' | 'hi';
+export type IndustryType = 'academic' | 'commercial' | 'vendor' | 'default';
 
 export interface DocumentContext {
-  detectedType: string; // e.g., "Passport Application", "Invoice"
-  appTitle: string; // e.g., "Passport Renewal Portal"
-  actionButtonLabel: string; // e.g., "Submit Application"
-  summaryLabel: string; // e.g., "Fields Completed", "Total Amount"
-  layoutType: LayoutType; // THE DECISION: How the app should look
+  detectedType: string;
+  appTitle: string;
+  actionButtonLabel: string;
+  summaryLabel: string;
+  layoutType: LayoutType;
+  type?: string;
+  confidence?: number;
+  isUnrelated?: boolean;
+  unrelatedType?: string;
+  isMenu?: boolean;
 }
 
 export interface BusinessRule {
-  type: 'threshold_action' | 'threshold_discount'; 
+  type: 'threshold_action' | 'threshold_discount' | 'discount' | 'flag'; 
   threshold: number;
   benefitValue: number; 
   originalText: string;
   actionName?: string; 
+  description?: string;
+  logic?: string;
+  value?: number;
 }
 
-export type Step = 'input' | 'review' | 'app';
+export type View = 'landing' | 'auth' | 'projects' | 'upload' | 'preview' | 'analytics';
+export type UploadStep = 'upload' | 'processing' | 'review';
+
+export interface Project {
+  id: string;
+  title: string;
+  type: string;
+  responses: number;
+  status: 'active' | 'draft' | 'paused';
+  lastEdited: string;
+  items: GenericItem[];
+  context: DocumentContext;
+  rule: BusinessRule | null;
+  icon?: any;
+  color?: string;
+}
 
 export interface AppState {
-  // Input Data
+  user: string | null;
+  view: View;
+  uploadStep: UploadStep;
+  projects: Project[];
+  currentProject: Project | null;
   uploadedImages: File[];
   uploadedAudio: File | null;
   manualRuleText: string;
-
-  // Extracted Data
   extractedItems: GenericItem[];
   documentContext: DocumentContext | null;
   rule: BusinessRule | null;
-
-  // UI State
-  step: Step;
   isLoading: boolean;
   loadingMessage: string;
 }

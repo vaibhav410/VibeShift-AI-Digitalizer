@@ -1,8 +1,24 @@
-
-import React, { useState, useMemo, useEffect } from 'react';
-import { GenericItem, BusinessRule, DocumentContext } from '../types';
-import { Check, ArrowLeft, ArrowRight, Layers, Smartphone, FileCheck, Circle, Save, CreditCard, Calendar, Type as TypeIcon, Hash, AlertTriangle, ShieldCheck, Database, Server, Wifi, ShoppingCart, Plus, Minus, ListTodo, ClipboardCheck, ScanLine, Share2, Code2, Download, X } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { 
+  Save, 
+  RotateCcw, 
+  CheckCircle2, 
+  AlertCircle, 
+  ArrowRight, 
+  Layout, 
+  List, 
+  Code, 
+  Zap, 
+  ChevronRight, 
+  X, 
+  Copy,
+  TrendingUp,
+  DollarSign,
+  Package
+} from 'lucide-react';
+import { GenericItem, DocumentContext, BusinessRule } from '../types';
 import confetti from 'canvas-confetti';
+import { db, collection, addDoc, serverTimestamp, handleFirestoreError, OperationType } from '../firebase';
 
 interface GeneratedFormProps {
   items: GenericItem[];
@@ -12,492 +28,330 @@ interface GeneratedFormProps {
 }
 
 const GeneratedForm: React.FC<GeneratedFormProps> = ({ items, context, rule, onReset }) => {
-  // STATE FOR FORM MODE
-  const [formValues, setFormValues] = useState<Record<string, string | number>>({});
-  
-  // STATE FOR CATALOG MODE
-  const [cart, setCart] = useState<Record<string, number>>({}); // Item ID -> Quantity
+  const [formData, setFormData] = useState<GenericItem[]>(items);
+  const [viewMode, setViewMode] = useState<'form' | 'catalog'>('form');
+  const [showSource, setShowSource] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  // STATE FOR CHECKLIST MODE
-  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+  const handleInputChange = (index: number, newValue: string) => {
+    const updated = [...formData];
+    updated[index] = { ...updated[index], value: newValue };
+    setFormData(updated);
+  };
 
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isLocalhost, setIsLocalhost] = useState(false);
-  const [showCode, setShowCode] = useState(false); // New: Toggle source code view
+  const totalValue = useMemo(() => {
+    return formData.reduce((acc, item) => {
+      const val = String(item.value || '').replace(/[^0-9.]/g, '');
+      const num = parseFloat(val);
+      return acc + (isNaN(num) ? 0 : num);
+    }, 0);
+  }, [formData]);
 
-  // Get the current URL for the QR code so mobile devices open this exact app
-  const currentAppUrl = typeof window !== 'undefined' ? window.location.href : 'https://vibeshift.ai';
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(currentAppUrl)}&margin=10&bgcolor=ffffff&color=000000`;
-
-  const layout = context?.layoutType || 'form';
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-      setIsLocalhost(true);
+  const appliedBenefit = useMemo(() => {
+    if (!rule) return null;
+    const threshold = rule.threshold || 0;
+    const value = rule.value || 0;
+    if (rule.type === 'discount' && totalValue >= threshold) {
+      return {
+        message: `System Alert: ${value}% Discount Applied`,
+        saving: (totalValue * value) / 100,
+        type: 'success'
+      };
     }
-  }, []);
+    if (rule.type === 'flag' && totalValue >= threshold) {
+      return {
+        message: `System Alert: High Value Threshold Reached`,
+        type: 'warning'
+      };
+    }
+    return null;
+  }, [rule, totalValue]);
 
-  useMemo(() => {
-    // Initialize Form Values
-    const initial: Record<string, string | number> = {};
-    items.forEach(item => {
-      initial[item.id] = item.value || "";
-    });
-    setFormValues(initial);
-  }, [items]);
-
-  const groupedItems = useMemo(() => {
-    const cats: Record<string, GenericItem[]> = {};
-    items.forEach(item => {
-      const c = item.category || 'General';
-      if (!cats[c]) cats[c] = [];
-      cats[c].push(item);
-    });
-    return cats;
-  }, [items]);
-
-  // --- LOGIC CALCULATIONS ---
-
-  // FORM TOTAL
-  const formTotal = Object.entries(formValues).reduce((acc, [key, val]) => {
-     const num = parseFloat(val as string);
-     return !isNaN(num) ? acc + num : acc;
-  }, 0);
-
-  // CART TOTAL
-  const cartTotal = items.reduce((acc, item) => {
-    const qty = cart[item.id] || 0;
-    const price = parseFloat(item.value as string) || 0;
-    return acc + (qty * price);
-  }, 0);
-
-  // CHECKLIST PROGRESS
-  const checkedCount = Object.values(checkedItems).filter(Boolean).length;
-  
-  // SHARED PROGRESS METRIC
-  let progressPercent = 0;
-  let metricValue = 0;
-  let metricLabel = "";
-
-  if (layout === 'form') {
-    const filledCount = Object.values(formValues).filter(v => v !== "" && v !== 0).length;
-    progressPercent = Math.min(100, Math.round((filledCount / items.length) * 100));
-    metricValue = filledCount;
-    metricLabel = "Fields Filled";
-  } else if (layout === 'catalog') {
-    const totalItems = Object.values(cart).reduce((a: number, b: number) => a + b, 0);
-    progressPercent = totalItems > 0 ? 100 : 0; // Simple binary progress for catalog
-    metricValue = cartTotal;
-    metricLabel = "Cart Value";
-  } else if (layout === 'checklist') {
-    progressPercent = Math.min(100, Math.round((checkedCount / items.length) * 100));
-    metricValue = checkedCount;
-    metricLabel = "Tasks Done";
-  }
-
-  // BUSINESS RULE LOGIC
-  let ruleTriggered = false;
-  let ruleMessage = "";
-  const trackedValue = layout === 'catalog' ? cartTotal : formTotal;
-
-  if (rule) {
-     if (trackedValue >= rule.threshold) {
-         ruleTriggered = true;
-         ruleMessage = rule.actionName || "Approval Required";
-         if (rule.type === 'threshold_discount') {
-             ruleMessage = `Benefit Applied: ${rule.benefitValue}%`;
-         }
-     } else {
-         ruleMessage = `Value: ${trackedValue} / Threshold: ${rule.threshold}`;
-     }
-  }
-
-  // --- HANDLERS ---
-
-  const handleFormChange = (id: string, value: string | number) => {
-    setFormValues(prev => ({ ...prev, [id]: value }));
+  const getCollectionName = (type: string) => {
+    const t = type.toLowerCase();
+    if (t.includes('student') || t.includes('college')) return 'student_registrations';
+    if (t.includes('patient') || t.includes('hospital')) return 'patient_intakes';
+    if (t.includes('restaurant') || t.includes('menu')) return 'restaurant_menus';
+    return 'general_submissions';
   };
 
-  const handleAddToCart = (id: string) => {
-    setCart(prev => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      const collectionName = getCollectionName(context?.detectedType || '');
+      const dataToSave: any = {
+        createdAt: serverTimestamp(),
+        data: formData.reduce((acc, item) => ({ ...acc, [item.id || item.name]: item.value }), {})
+      };
 
-  const handleRemoveFromCart = (id: string) => {
-    setCart(prev => {
-      const newQty = (prev[id] || 0) - 1;
-      if (newQty <= 0) {
-        const { [id]: _, ...rest } = prev;
-        return rest;
-      }
-      return { ...prev, [id]: newQty };
-    });
-  };
-
-  const handleToggleCheck = (id: string) => {
-    setCheckedItems(prev => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const handleSubmit = () => {
-    setIsSubmitted(true);
-    // Trigger Confetti
-    const duration = 3000;
-    const end = Date.now() + duration;
-
-    const frame = () => {
-      confetti({
-        particleCount: 2,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0 },
-        colors: ['#a78bfa', '#38bdf8', '#34d399']
-      });
-      confetti({
-        particleCount: 2,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1 },
-        colors: ['#a78bfa', '#38bdf8', '#34d399']
+      // Map specific fields for schema validation
+      formData.forEach(item => {
+        const label = item.name.toLowerCase();
+        if (label.includes('name')) {
+          if (collectionName === 'student_registrations') dataToSave.name = item.value;
+          if (collectionName === 'patient_intakes') dataToSave.patientName = item.value;
+          if (collectionName === 'restaurant_menus') dataToSave.itemName = item.value;
+        }
+        if (label.includes('email')) dataToSave.email = item.value;
+        if (label.includes('id')) dataToSave.studentId = item.value;
+        if (label.includes('course')) dataToSave.course = item.value;
+        if (label.includes('price')) dataToSave.price = parseFloat(String(item.value).replace(/[^0-9.]/g, '')) || 0;
+        if (label.includes('category')) dataToSave.category = item.value;
       });
 
-      if (Date.now() < end) {
-        requestAnimationFrame(frame);
-      }
-    };
-    frame();
-  };
-
-  // --- SOURCE CODE GENERATION ---
-  const generatedSourceCode = `import React, { useState } from 'react';
-
-// Generated by VibeShift AI
-// App: ${context?.appTitle}
-// Layout: ${layout.toUpperCase()}
-
-export default function ${context?.appTitle.replace(/[^a-zA-Z]/g, '')}App() {
-  ${layout === 'form' ? `const [formData, setFormData] = useState({});` : ''}
-  ${layout === 'catalog' ? `const [cart, setCart] = useState({});` : ''}
-  ${layout === 'checklist' ? `const [checked, setChecked] = useState({});` : ''}
-
-  return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">${context?.appTitle}</h1>
+      await addDoc(collection(db, collectionName), dataToSave);
       
-      <div className="grid gap-6">
-        {/* Generated Components */}
-${items.map(item => `        <div className="form-group">
-          <label>${item.name}</label>
-          <${item.type === 'textarea' ? 'textarea' : 'input'} 
-             type="${item.type}" 
-             placeholder="${item.description || item.name}"
-             className="border p-2 rounded w-full"
-          />
-        </div>`).join('\n')}
-      </div>
+      setIsSubmitting(false);
+      setIsSuccess(true);
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#ffffff', '#71717a', '#27272a']
+      });
+    } catch (error) {
+      console.error(error);
+      setIsSubmitting(false);
+      // Let handleFirestoreError handle the logging and throwing
+      try {
+        handleFirestoreError(error, OperationType.WRITE, getCollectionName(context?.detectedType || ''));
+      } catch (e) {
+        alert("Submission failed: " + (e instanceof Error ? e.message : "Unknown error"));
+      }
+    }
+  };
 
-      <button className="btn-primary mt-8">
-        ${context?.actionButtonLabel}
-      </button>
+  const sourceCode = `
+import React, { useState } from 'react';
+
+// Auto-generated by BizFlow Architect
+export const GeneratedApp = () => {
+  const [data, setData] = useState(${JSON.stringify(formData, null, 2)});
+  
+  return (
+    <div className="p-8 bg-zinc-950 text-white">
+      <h1 className="text-2xl font-bold mb-6">${context?.detectedType || 'Process Interface'}</h1>
+      <form className="space-y-4">
+        {data.map((item, i) => (
+          <div key={i} className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-zinc-400">{item.name}</label>
+            <input 
+              className="bg-zinc-900 border border-zinc-800 rounded-lg p-2"
+              value={item.value} 
+            />
+          </div>
+        ))}
+      </form>
     </div>
   );
-}`;
+};
+  `.trim();
 
-  if (isSubmitted) {
+  if (isSuccess) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh] animate-in fade-in duration-500 relative">
-        <div className="max-w-md w-full glass-card rounded-2xl shadow-2xl p-10 text-center border border-slate-700 relative z-10">
-          <div className="w-24 h-24 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(16,185,129,0.3)] animate-[bounce_2s_infinite]">
-            <Check size={48} />
-          </div>
-          <h2 className="text-3xl font-bold text-white mb-3">
-             {layout === 'catalog' ? 'Order Placed!' : layout === 'checklist' ? 'Audit Complete!' : 'Data Processed!'}
-          </h2>
-          <p className="text-slate-400 mb-8 leading-relaxed">
-            The digital record for <span className="text-emerald-400 font-semibold">{context?.appTitle}</span> has been synced to the database.
-          </p>
-          
-          <div className="flex flex-col space-y-3">
-             <button className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors border border-slate-700 flex items-center justify-center gap-2">
-                <Download size={18} />
-                Download Report (PDF)
-             </button>
-             <button onClick={() => { setIsSubmitted(false); onReset(); }} className="text-slate-500 hover:text-white text-sm font-medium transition-colors pt-2">
-                Process Another Document
-             </button>
-          </div>
+      <div className="max-w-xl mx-auto text-center space-y-8 py-20 animate-fade-in">
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-500/10 rounded-full text-emerald-500 mb-4">
+          <CheckCircle2 size={40} />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-3xl font-semibold text-white">Submission Successful</h2>
+          <p className="text-zinc-500">The process data has been synchronized with the enterprise backend.</p>
+        </div>
+        <div className="flex justify-center gap-4">
+          <button onClick={() => setIsSuccess(false)} className="btn-secondary">View Record</button>
+          <button onClick={onReset} className="btn-primary">New Synthesis</button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full pb-20 animate-in fade-in duration-700 relative">
-        
-        {/* SOURCE CODE MODAL */}
-        {showCode && (
-          <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200">
-             <div className="bg-[#1e1e1e] w-full max-w-4xl rounded-xl border border-slate-700 shadow-2xl overflow-hidden flex flex-col h-[80vh]">
-                 <div className="bg-[#2d2d2d] px-4 py-3 flex items-center justify-between border-b border-black">
-                    <div className="flex items-center gap-2">
-                       <Code2 size={16} className="text-blue-400" />
-                       <span className="text-slate-300 font-mono text-sm">src/App.tsx</span>
+    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-semibold text-white">{context?.detectedType || 'Process Interface'}</h2>
+          <p className="text-sm text-zinc-500">Synthesized from source document • {formData.length} Active Fields</p>
+        </div>
+
+        <div className="flex items-center gap-2 p-1 bg-zinc-900 rounded-lg border border-zinc-800">
+          <button 
+            onClick={() => setViewMode('form')}
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-medium transition-all ${viewMode === 'form' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+          >
+            <Layout size={14} />
+            <span>Form View</span>
+          </button>
+          <button 
+            onClick={() => setViewMode('catalog')}
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-medium transition-all ${viewMode === 'catalog' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+          >
+            <List size={14} />
+            <span>Catalog View</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-6">
+          {viewMode === 'form' ? (
+            <div className="card-minimal p-8">
+              <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                  {formData.map((item, idx) => (
+                    <div key={idx} className="space-y-2">
+                      <label className="text-xs font-medium text-zinc-500 uppercase tracking-widest ml-1">{item.name}</label>
+                      <input 
+                        type="text"
+                        value={item.value}
+                        onChange={(e) => handleInputChange(idx, e.target.value)}
+                        className="w-full input-minimal text-sm"
+                      />
                     </div>
-                    <button onClick={() => setShowCode(false)} className="text-slate-400 hover:text-white"><X size={20} /></button>
-                 </div>
-                 <div className="flex-1 overflow-auto p-6">
-                    <pre className="font-mono text-xs md:text-sm text-blue-100 leading-relaxed">
-                       {generatedSourceCode}
-                    </pre>
-                 </div>
-                 <div className="bg-[#2d2d2d] px-6 py-4 border-t border-black flex justify-end">
-                    <button onClick={() => {
-                        navigator.clipboard.writeText(generatedSourceCode);
-                        alert("Code copied to clipboard!");
-                    }} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors">
-                        Copy to Clipboard
+                  ))}
+                </div>
+
+                <div className="pt-8 border-t border-zinc-900 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                  <button type="button" onClick={onReset} className="text-zinc-500 hover:text-white transition-colors text-sm font-medium flex items-center justify-center gap-2 py-2">
+                    <RotateCcw size={16} />
+                    <span>Reset</span>
+                  </button>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <button type="button" onClick={() => setShowSource(true)} className="btn-secondary text-sm flex items-center justify-center gap-2 py-2.5 px-4">
+                      <Code size={16} />
+                      <span>View Source</span>
                     </button>
-                 </div>
-             </div>
+                    <button type="submit" disabled={isSubmitting} className="btn-primary text-sm flex items-center justify-center gap-2 py-2.5 px-6">
+                      {isSubmitting ? (
+                        <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
+                      ) : (
+                        <>
+                          <Save size={16} />
+                          <span>Commit Changes</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {formData.map((item, idx) => (
+                <div key={idx} className="card-minimal p-6 flex items-start gap-4 hover:border-zinc-700 transition-colors">
+                  <div className="p-3 bg-zinc-900 rounded-xl text-zinc-400">
+                    <Package size={20} />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">{item.name}</p>
+                    <p className="text-sm font-medium text-white">{item.value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-6">
+          <div className="card-minimal p-6 space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Financial Summary</h3>
+              <DollarSign size={16} className="text-zinc-600" />
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex justify-between items-end">
+                <span className="text-sm text-zinc-400">Aggregated Value</span>
+                <span className="text-2xl font-semibold text-white">${totalValue.toLocaleString()}</span>
+              </div>
+              
+              {appliedBenefit && (
+                <div className={`p-4 rounded-xl border ${appliedBenefit.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-amber-500/10 border-amber-500/20 text-amber-400'}`}>
+                  <div className="flex items-start gap-3">
+                    {appliedBenefit.type === 'success' ? <CheckCircle2 size={16} className="shrink-0" /> : <AlertCircle size={16} className="shrink-0" />}
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold uppercase tracking-wider">{appliedBenefit.message}</p>
+                      {appliedBenefit.saving && (
+                        <p className="text-[10px] font-medium opacity-80 italic">Estimated Savings: ${appliedBenefit.saving.toLocaleString()}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {rule && (
+                <div className="pt-4 border-t border-zinc-900 space-y-3">
+                  <div className="flex items-center justify-between text-[10px] font-bold text-zinc-600 uppercase tracking-widest">
+                    <span>Active Logic</span>
+                    <Zap size={10} />
+                  </div>
+                  <div className="p-3 bg-zinc-950 border border-zinc-900 rounded-lg">
+                    <p className="text-[11px] text-zinc-400 leading-relaxed italic">"{rule.originalText}"</p>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[10px] font-medium text-zinc-500">
+                      <span>Threshold Progress</span>
+                      <span>{Math.min(100, Math.round((totalValue / (rule.threshold || 1)) * 100))}%</span>
+                    </div>
+                    <div className="h-1 w-full bg-zinc-900 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full transition-all duration-1000 ${totalValue >= (rule.threshold || 0) ? 'bg-emerald-500' : 'bg-zinc-700'}`}
+                        style={{ width: `${Math.min(100, (totalValue / (rule.threshold || 1)) * 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        )}
 
-        {/* TOP NAVIGATION BAR */}
-        <div className="flex items-center justify-between mb-10">
-             <button onClick={onReset} className="flex items-center space-x-2 text-slate-400 hover:text-white transition-colors group">
-                <div className="p-2 rounded-full bg-slate-800 border border-slate-700 group-hover:border-slate-600 transition-colors">
-                    <ArrowLeft size={18} />
-                </div>
-                <span className="font-medium">Back to Analysis</span>
-             </button>
-             
-             <div className="flex items-center space-x-3">
-                 <button 
-                    onClick={() => setShowCode(true)}
-                    className="hidden md:flex items-center space-x-2 px-4 py-1.5 bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 text-xs font-bold rounded-full border border-slate-700 transition-all"
-                 >
-                    <Code2 size={12} />
-                    <span>VIEW SOURCE</span>
-                 </button>
-                 <div className="hidden md:flex items-center space-x-2 px-4 py-1.5 bg-slate-900/50 text-slate-400 text-xs font-medium rounded-full border border-slate-800">
-                    <Database size={12} />
-                    <span>PostgreSQL: Connected</span>
-                 </div>
-                 <div className="flex items-center space-x-2 px-4 py-1.5 bg-emerald-500/10 text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>LIVE {layout.toUpperCase()} APP</span>
-                 </div>
-             </div>
-        </div>
-
-        {/* GRID LAYOUT: 2/3 Main Content, 1/3 Sidebar */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-        
-            {/* --- MAIN CONTENT AREA (Left 8 Cols) --- */}
-            <div className="lg:col-span-8 space-y-8">
-                
-                {/* APP HEADER CARD */}
-                <div className="glass-card rounded-2xl p-8 relative overflow-hidden group border border-slate-700">
-                    <div className="absolute top-0 right-0 p-40 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-full blur-[100px] -mr-20 -mt-20 opacity-20 pointer-events-none"></div>
-                    <div className="relative z-10">
-                        <div className="text-xs font-bold text-violet-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                <Layers size={14} /> {context?.detectedType}
-                        </div>
-                        <h1 className="text-4xl font-extrabold text-white mb-4 tracking-tight">{context?.appTitle}</h1>
-                        <p className="text-slate-400 text-sm font-medium flex items-center gap-2">
-                            <Server size={14} className="text-emerald-500" />
-                            {layout === 'catalog' ? 'Real-time Inventory Sync' : layout === 'checklist' ? 'Audit Logs Active' : 'Secure Enterprise Gateway'}
-                        </p>
-                    </div>
-                </div>
-
-                {/* DYNAMIC CONTENT CARDS */}
-                {(Object.entries(groupedItems) as [string, GenericItem[]][]).map(([category, catItems]) => (
-                    <div key={category} className="glass-card rounded-2xl overflow-hidden border border-slate-800 transition-all hover:border-slate-700">
-                        <div className="bg-slate-900/60 px-8 py-5 border-b border-slate-700/50 backdrop-blur-sm flex items-center space-x-3">
-                            <div className="w-1 h-5 rounded-full bg-gradient-to-b from-violet-500 to-indigo-500"></div>
-                            <h3 className="font-bold text-slate-200 uppercase tracking-wider text-sm">{category}</h3>
-                        </div>
-                        
-                        <div className="p-8">
-                            {/* --- LAYOUT 1: CATALOG MODE --- */}
-                            {layout === 'catalog' ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {catItems.map(item => (
-                                        <div key={item.id} className="bg-slate-950/30 border border-slate-800 rounded-xl p-5 flex justify-between items-center group hover:border-violet-500/40 transition-all">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-14 h-14 bg-slate-800 rounded-lg flex items-center justify-center text-slate-500 group-hover:text-violet-400 transition-colors">
-                                                    <ShoppingCart size={24} />
-                                                </div>
-                                                <div>
-                                                    <div className="font-bold text-slate-200 text-lg">{item.name}</div>
-                                                    <div className="text-emerald-400 font-mono font-medium">${item.value || '0.00'}</div>
-                                                </div>
-                                            </div>
-                                            {cart[item.id] ? (
-                                                <div className="flex items-center bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
-                                                    <button onClick={() => handleRemoveFromCart(item.id)} className="p-3 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"><Minus size={16} /></button>
-                                                    <span className="w-10 text-center font-bold text-white">{cart[item.id]}</span>
-                                                    <button onClick={() => handleAddToCart(item.id)} className="p-3 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"><Plus size={16} /></button>
-                                                </div>
-                                            ) : (
-                                                <button onClick={() => handleAddToCart(item.id)} className="p-3 bg-violet-600/10 text-violet-400 border border-violet-600/20 rounded-lg hover:bg-violet-600 hover:text-white transition-all">
-                                                    <Plus size={20} />
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : 
-                            /* --- LAYOUT 2: CHECKLIST MODE --- */
-                            layout === 'checklist' ? (
-                                <div className="space-y-4">
-                                    {catItems.map(item => (
-                                        <div 
-                                        key={item.id} 
-                                        onClick={() => handleToggleCheck(item.id)}
-                                        className={`p-5 rounded-xl border flex items-center justify-between cursor-pointer transition-all group ${checkedItems[item.id] ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-slate-950/30 border-slate-800 hover:border-slate-600'}`}
-                                        >
-                                            <div className="flex items-center gap-4">
-                                                <div className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all ${checkedItems[item.id] ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'border-slate-600 group-hover:border-slate-400'}`}>
-                                                    {checkedItems[item.id] && <Check size={18} />}
-                                                </div>
-                                                <span className={`text-lg font-medium transition-colors ${checkedItems[item.id] ? 'text-emerald-400 line-through decoration-emerald-500/30' : 'text-slate-200'}`}>{item.name}</span>
-                                            </div>
-                                            <div className={`text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ${checkedItems[item.id] ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-500'}`}>
-                                                {checkedItems[item.id] ? 'Verified' : 'Pending'}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) :
-                            /* --- LAYOUT 3: FORM MODE (Default) --- */
-                            (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    {catItems.map(item => {
-                                        const inputType = item.type || (typeof item.value === 'number' ? 'number' : 'text');
-                                        return (
-                                            <div key={item.id} className={`${inputType === 'textarea' ? 'md:col-span-2' : ''} space-y-3 group`}>
-                                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider group-hover:text-violet-400 transition-colors flex items-center gap-2 ml-1">
-                                                    {inputType === 'date' && <Calendar size={12} />}
-                                                    {inputType === 'number' && <Hash size={12} />}
-                                                    {inputType === 'text' && <TypeIcon size={12} />}
-                                                    {item.name}
-                                                </label>
-                                                
-                                                {inputType === 'textarea' ? (
-                                                    <textarea
-                                                        value={formValues[item.id] || ''}
-                                                        onChange={(e) => handleFormChange(item.id, e.target.value)}
-                                                        className="w-full bg-slate-950/50 border border-slate-700 rounded-xl px-4 py-4 text-slate-100 placeholder-slate-600 focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 outline-none transition-all h-32 resize-none hover:bg-slate-900"
-                                                        placeholder={item.description || `Enter ${item.name}...`}
-                                                    />
-                                                ) : (
-                                                    <input
-                                                        type={inputType === 'number' ? 'number' : 'text'}
-                                                        value={formValues[item.id] || ''}
-                                                        onChange={(e) => handleFormChange(item.id, e.target.value)}
-                                                        className="w-full bg-slate-950/50 border border-slate-700 rounded-xl px-4 py-4 text-slate-100 placeholder-slate-600 focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 outline-none transition-all hover:bg-slate-900"
-                                                        placeholder={item.description || `Enter ${item.name}...`}
-                                                    />
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                ))}
+          <div className="card-minimal p-6 bg-zinc-900/20 border-dashed border-zinc-800 space-y-4">
+            <div className="flex items-center gap-3 text-zinc-500">
+              <TrendingUp size={18} />
+              <h3 className="text-xs font-bold uppercase tracking-widest">Process Insights</h3>
             </div>
-
-            {/* --- SIDEBAR (Right 4 Cols) - STICKY --- */}
-            <div className="lg:col-span-4 sticky top-24 space-y-8">
-                
-                {/* STATUS & ACTIONS CARD */}
-                <div className="glass-card rounded-2xl overflow-hidden border border-slate-800">
-                    <div className="p-6 border-b border-slate-800 bg-slate-900/50">
-                        <h3 className="font-bold text-white text-lg flex items-center gap-2">
-                            {layout === 'catalog' ? <ShoppingCart size={20} className="text-indigo-400" /> : 
-                            layout === 'checklist' ? <ClipboardCheck size={20} className="text-indigo-400" /> :
-                            <FileCheck size={20} className="text-indigo-400" />}
-                            {layout === 'catalog' ? 'Order Summary' : layout === 'checklist' ? 'Audit Status' : 'Overview'}
-                        </h3>
-                    </div>
-
-                    <div className="p-6 space-y-6">
-                        {/* Progress Bar */}
-                        <div className="space-y-3">
-                            <div className="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
-                                <span>{layout === 'checklist' ? 'Completion' : 'Progress'}</span>
-                                <span className={progressPercent === 100 ? 'text-emerald-400' : 'text-slate-400'}>{progressPercent}%</span>
-                            </div>
-                            <div className="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                                <div 
-                                    className={`h-full rounded-full transition-all duration-700 ${progressPercent === 100 ? 'bg-emerald-500' : 'bg-gradient-to-r from-violet-500 to-indigo-500'}`}
-                                    style={{ width: `${progressPercent}%` }}
-                                ></div>
-                            </div>
-                            <div className="flex justify-between items-center pt-1">
-                                <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">{metricLabel}</span>
-                                <span className="text-xl font-bold text-white font-mono">{layout === 'catalog' ? `$${metricValue.toFixed(2)}` : metricValue}</span>
-                            </div>
-                        </div>
-
-                        {/* Validation/Rules Widget */}
-                        <div className={`rounded-xl p-4 border transition-all duration-300 ${
-                            ruleTriggered 
-                            ? 'bg-amber-500/10 border-amber-500/30' 
-                            : 'bg-slate-900/50 border-slate-700'
-                        }`}>
-                            <div className="flex items-start gap-3">
-                                {ruleTriggered ? <AlertTriangle size={20} className="text-amber-500 shrink-0 mt-0.5" /> : <ShieldCheck size={20} className="text-emerald-500 shrink-0 mt-0.5" />}
-                                <div>
-                                    <h4 className={`font-bold text-sm mb-1 ${ruleTriggered ? 'text-amber-400' : 'text-slate-200'}`}>
-                                        {ruleTriggered ? "System Alert Triggered" : "System Normal"}
-                                    </h4>
-                                    <p className="text-xs text-slate-400 leading-relaxed">
-                                        {rule ? (ruleTriggered ? ruleMessage : `Threshold: ${rule.threshold} (Active)`) : "Standard validation protocols active."}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Submit Button */}
-                        <button 
-                            onClick={handleSubmit}
-                            className="w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-bold hover:from-violet-500 hover:to-indigo-500 transition-all shadow-lg hover:shadow-[0_0_25px_rgba(124,58,237,0.4)] active:scale-95 flex items-center justify-center space-x-2 group"
-                        >
-                            <span>{context?.actionButtonLabel || (layout === 'catalog' ? "Place Order" : layout === 'checklist' ? "Finalize Audit" : "Process Data")}</span>
-                            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                        </button>
-                    </div>
-                </div>
-
-                {/* MOBILE ACCESS CARD (QR CODE) */}
-                <div className="glass-card rounded-2xl p-6 border border-slate-800 flex flex-col items-center text-center relative overflow-hidden">
-                    <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-transparent via-violet-500 to-transparent opacity-50"></div>
-                    
-                    <div className="mb-4">
-                         <div className="bg-white p-2 rounded-xl border-4 border-slate-200/10 shadow-lg cursor-pointer transition-transform hover:scale-105 relative overflow-hidden group/qr">
-                           <img src={qrCodeUrl} alt="Scan to Open App" className="w-32 h-32 object-contain" />
-                           <div className="absolute top-0 left-0 w-full h-1 bg-violet-500/50 shadow-[0_0_10px_rgba(139,92,246,0.5)] animate-[scan_2s_ease-in-out_infinite] opacity-0 group-hover/qr:opacity-100"></div>
-                       </div>
-                    </div>
-                    
-                    <h4 className="text-white font-bold mb-1 flex items-center gap-2">
-                        <Smartphone size={16} className="text-violet-400" />
-                        Mobile Handover
-                    </h4>
-                    <p className="text-xs text-slate-400 mb-3 px-4">Scan to continue this session on a mobile device.</p>
-                    
-                     {isLocalhost && (
-                         <div className="text-[10px] text-amber-500 font-mono bg-amber-500/10 px-3 py-1 rounded border border-amber-500/20">
-                           Deployment Required for External Scan
-                         </div>
-                       )}
-                </div>
-
-            </div>
+            <p className="text-[11px] text-zinc-500 leading-relaxed">
+              Our neural engine has identified potential optimizations for this workflow. Automated reconciliation is recommended for high-value items.
+            </p>
+          </div>
         </div>
+      </div>
+
+      {showSource && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-3xl card-minimal bg-zinc-950 overflow-hidden flex flex-col max-h-[80vh]">
+            <div className="p-4 border-b border-zinc-900 flex items-center justify-between bg-zinc-900/30">
+              <div className="flex items-center gap-3">
+                <Code size={18} className="text-zinc-500" />
+                <h3 className="text-sm font-semibold text-white">Synthesized React Component</h3>
+              </div>
+              <button onClick={() => setShowSource(false)} className="p-1 hover:bg-zinc-800 rounded-md transition-colors text-zinc-500">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6 bg-black">
+              <pre className="text-xs font-mono text-zinc-400 leading-relaxed">
+                <code>{sourceCode}</code>
+              </pre>
+            </div>
+            <div className="p-4 border-t border-zinc-900 bg-zinc-900/30 flex justify-end gap-3">
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(sourceCode);
+                  alert('Source code copied to clipboard');
+                }}
+                className="btn-secondary text-xs flex items-center gap-2"
+              >
+                <Copy size={14} />
+                <span>Copy Code</span>
+              </button>
+              <button onClick={() => setShowSource(false)} className="btn-primary text-xs">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

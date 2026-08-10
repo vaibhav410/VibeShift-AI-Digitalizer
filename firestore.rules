@@ -1,0 +1,141 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: student_registrations
+// Document ID: auto-generated
+// Fields:
+//   - name: string (required)
+//   - email: string (required, format: email)
+//   - studentId: string (optional)
+//   - course: string (optional)
+//   - data: map (optional) - raw extracted data
+//   - createdAt: timestamp (required)
+//
+// Collection: patient_intakes
+// Document ID: auto-generated
+// Fields:
+//   - patientName: string (required)
+//   - dob: string (optional)
+//   - medicalHistory: string (optional)
+//   - data: map (optional)
+//   - createdAt: timestamp (required)
+//
+// Collection: restaurant_menus
+// Document ID: auto-generated
+// Fields:
+//   - itemName: string (required)
+//   - price: number (optional)
+//   - category: string (optional)
+//   - data: map (optional)
+//   - createdAt: timestamp (required)
+//
+// Collection: general_submissions
+// Document ID: auto-generated
+// Fields:
+//   - title: string (optional)
+//   - data: map (optional)
+//   - createdAt: timestamp (required)
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function isValidEmail(email) {
+      return email is string &&
+        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isRecent(ts) {
+      return ts is timestamp &&
+        ts > request.time - duration.value(5, 'm') &&
+        ts <= request.time;
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidStudentRegistration(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             isValidEmail(data.email) &&
+             (!('studentId' in data) || (data.studentId is string && data.studentId.size() < 50)) &&
+             (!('course' in data) || (data.course is string && data.course.size() < 100)) &&
+             (!('data' in data) || data.data is map) &&
+             isRecent(data.createdAt);
+    }
+
+    function isValidPatientIntake(data) {
+      return data.patientName is string && data.patientName.size() > 0 && data.patientName.size() < 100 &&
+             (!('dob' in data) || data.dob is string) &&
+             (!('medicalHistory' in data) || data.medicalHistory is string) &&
+             (!('data' in data) || data.data is map) &&
+             isRecent(data.createdAt);
+    }
+
+    function isValidRestaurantMenu(data) {
+      return data.itemName is string && data.itemName.size() > 0 && data.itemName.size() < 100 &&
+             (!('price' in data) || data.price is number) &&
+             (!('category' in data) || data.category is string) &&
+             (!('data' in data) || data.data is map) &&
+             isRecent(data.createdAt);
+    }
+
+    function isValidGeneralSubmission(data) {
+      return (!('title' in data) || (data.title is string && data.title.size() < 100)) &&
+             (!('data' in data) || data.data is map) &&
+             isRecent(data.createdAt);
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    match /student_registrations/{id} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && hasRequiredFields(['name', 'email', 'createdAt']) && isValidStudentRegistration(request.resource.data);
+      allow update, delete: if false; // Immutable for now
+    }
+
+    match /patient_intakes/{id} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && hasRequiredFields(['patientName', 'createdAt']) && isValidPatientIntake(request.resource.data);
+      allow update, delete: if false;
+    }
+
+    match /restaurant_menus/{id} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && hasRequiredFields(['itemName', 'createdAt']) && isValidRestaurantMenu(request.resource.data);
+      allow update, delete: if false;
+    }
+
+    match /general_submissions/{id} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && hasRequiredFields(['createdAt']) && isValidGeneralSubmission(request.resource.data);
+      allow update, delete: if false;
+    }
+
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

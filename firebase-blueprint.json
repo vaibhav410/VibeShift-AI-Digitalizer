@@ -1,0 +1,72 @@
+{
+  "entities": {
+    "StudentRegistration": {
+      "title": "Student Registration",
+      "description": "Information for student registration",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "studentId": { "type": "string" },
+        "course": { "type": "string" },
+        "data": { "type": "object", "description": "Raw extracted data" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email"]
+    },
+    "PatientIntake": {
+      "title": "Patient Intake",
+      "description": "Medical intake form data",
+      "type": "object",
+      "properties": {
+        "patientName": { "type": "string" },
+        "dob": { "type": "string" },
+        "medicalHistory": { "type": "string" },
+        "data": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["patientName"]
+    },
+    "RestaurantMenu": {
+      "title": "Restaurant Menu",
+      "description": "Menu items and details",
+      "type": "object",
+      "properties": {
+        "itemName": { "type": "string" },
+        "price": { "type": "number" },
+        "category": { "type": "string" },
+        "data": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["itemName"]
+    },
+    "GeneralForm": {
+      "title": "General Form",
+      "description": "General form submission",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "data": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "firestore": {
+    "/student_registrations/{id}": {
+      "schema": "StudentRegistration",
+      "description": "Collection of student registrations"
+    },
+    "/patient_intakes/{id}": {
+      "schema": "PatientIntake",
+      "description": "Collection of patient intake forms"
+    },
+    "/restaurant_menus/{id}": {
+      "schema": "RestaurantMenu",
+      "description": "Collection of restaurant menu items"
+    },
+    "/general_submissions/{id}": {
+      "schema": "GeneralForm",
+      "description": "Collection of general form submissions"
+    }
+  }
+}

@@ -6,17 +6,26 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "tsc --noEmit",
+    "compile": "tsc --noEmit"
   },
   "dependencies": {
-    "react": "^19.2.1",
-    "lucide-react": "^0.559.0",
-    "@google/genai": "^1.32.0",
-    "react-dom": "^19.2.1",
-    "canvas-confetti": "1.9.2"
+    "@google/genai": "1.32.0",
+    "@tailwindcss/vite": "^4.2.2",
+    "canvas-confetti": "1.9.2",
+    "firebase": "^12.11.0",
+    "lucide-react": "0.471.0",
+    "motion": "^12.38.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "recharts": "^3.8.1",
+    "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
